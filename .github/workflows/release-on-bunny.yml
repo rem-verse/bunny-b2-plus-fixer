@@ -1,0 +1,32 @@
+---
+name: Deploy Bunny Scripting Script
+
+on:
+  push:
+    branches:
+      - trunk
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  update-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.2.11
+      - name: Build
+        run: "deno run --allow-env --allow-read --allow-write --allow-run build.ts"
+      - name: Publish the script to Bunny
+        uses: "BunnyWay/actions/deploy-script@main"
+        with:
+          script_id: "${{ secrets.BUNNY_SCRIPT_ID }}"
+          deploy_key: "${{ secrets.BUNNY_DEPLOYMENT_SECRET }}"
+          file: "dist/index.esm.js"
